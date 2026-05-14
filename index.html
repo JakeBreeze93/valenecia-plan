@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valencia 2026</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, system-ui, sans-serif;
+  background: #0f0f0f;
+  color: #e0e0e0;
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(15,15,15,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 16px 20px;
+  border-bottom: 1px solid #2a2a2a;
+}
+header h1 { font-size: 20px; font-weight: 700; color: #fff; }
+header .meta { display: flex; gap: 12px; margin-top: 4px; font-size: 13px; color: #888; }
+header .meta span { white-space: nowrap; }
+
+.hero {
+  padding: 20px;
+}
+.hero-card {
+  background: #1a1a1a;
+  border-radius: 16px;
+  padding: 24px;
+  border-left: 4px solid #444;
+  position: relative;
+}
+.hero-card.tempo { border-left-color: #ffd93d; }
+.hero-card.easy { border-left-color: #4caf50; }
+.hero-card.vo2 { border-left-color: #c44dff; }
+.hero-card.long { border-left-color: #4ecdc4; }
+.hero-card.race { border-left-color: #ff6b6b; }
+.hero-card.rest { border-left-color: #444; }
+.hero-card.cross { border-left-color: rgba(255,217,61,0.85); }
+.hero-date { font-size: 13px; color: #888; margin-bottom: 8px; }
+.hero-name { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.hero-detail { font-size: 14px; color: #bbb; line-height: 1.5; }
+.hero-badges { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-distance { background: rgba(78,205,196,0.15); color: #4ecdc4; }
+.badge-track { background: rgba(196,77,255,0.15); color: #c44dff; }
+.hero-prestart { text-align: center; padding: 40px 20px; color: #888; font-size: 15px; }
+
+.week-tabs {
+  padding: 0 20px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.week-tabs::-webkit-scrollbar { display: none; }
+.week-tabs-inner {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+}
+.week-tab {
+  min-width: 44px; min-height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px 14px;
+  border-radius: 22px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #1a1a1a;
+  color: #888;
+  border: 1px solid #2a2a2a;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+.week-tab.active {
+  background: #4ecdc4;
+  color: #000;
+  border-color: #4ecdc4;
+}
+
+.week-sessions { padding: 0 20px 20px; }
+.session-card {
+  background: #1a1a1a;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  border-left: 3px solid #444;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.session-card.tempo { border-left-color: #ffd93d; }
+.session-card.easy { border-left-color: #4caf50; }
+.session-card.vo2 { border-left-color: #c44dff; }
+.session-card.long { border-left-color: #4ecdc4; }
+.session-card.race { border-left-color: #ff6b6b; }
+.session-card.rest { border-left-color: #444; }
+.session-card.cross { border-left-color: rgba(255,217,61,0.85); }
+.session-card.done { opacity: 0.5; }
+.session-card.done .session-name { text-decoration: line-through; }
+.session-header {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  min-height: 44px;
+  cursor: pointer;
+  gap: 12px;
+}
+.session-day {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  min-width: 32px;
+}
+.session-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #e0e0e0;
+}
+.session-dist {
+  font-size: 12px;
+  color: #4ecdc4;
+  font-weight: 600;
+}
+.session-expand {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.session-card.expanded .session-expand {
+  max-height: 200px;
+}
+.session-detail {
+  padding: 0 16px 14px;
+  font-size: 13px;
+  color: #999;
+  line-height: 1.5;
+}
+.done-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(78,205,196,0.1);
+  color: #4ecdc4;
+  border: 1px solid rgba(78,205,196,0.3);
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  transition: all 0.3s ease;
+}
+.session-card.done .done-btn {
+  background: rgba(255,255,255,0.05);
+  color: #666;
+  border-color: #333;
+}
+.session-card.today .session-header {
+  background: rgba(78,205,196,0.05);
+}
+
+.volume-chart {
+  padding: 20px;
+  border-top: 1px solid #2a2a2a;
+  margin-top: 10px;
+}
+.volume-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #888;
+  margin-bottom: 14px;
+}
+.volume-bar-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+.volume-label {
+  font-size: 11px;
+  color: #666;
+  min-width: 26px;
+}
+.volume-bar-bg {
+  flex: 1;
+  height: 18px;
+  background: #1a1a1a;
+  border-radius: 9px;
+  overflow: hidden;
+}
+.volume-bar {
+  height: 100%;
+  border-radius: 9px;
+  background: #333;
+  transition: width 0.5s ease;
+}
+.volume-bar.active { background: #4ecdc4; }
+.volume-val {
+  font-size: 11px;
+  color: #666;
+  min-width: 28px;
+  text-align: right;
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const plan = {
+  raceDate: '2026-12-06',
+  startDate: '2026-09-14',
+  weeks: [
+    { week:1, phase:'Build', volume:59, days:[
+      {day:'Mon',type:'rest',name:'Rest',detail:'Sauna + Cold Plunge'},
+      {day:'Tue',type:'tempo',name:'Tempo',detail:'3km WU → 3×3km @ 3:55/km (800m jog) → 2km CD',distance:'16km'},
+      {day:'Wed',type:'cross',name:'Weights + Pilates',detail:'Heavy lower body + core. Reformer Pilates.'},
+      {day:'Thu',type:'easy',name:'Easy Run',detail:'10km @ 5:00-5:20/km',distance:'10km'},
+      {day:'Fri',type:'vo2',name:'VO2 Intervals',detail:'2km WU → 5×1km @ 3:35/km (400m jog) → 2km CD',distance:'11km',track:true},
+      {day:'Sat',type:'cross',name:'Weights (heavy upper)',detail:'Heavy upper body'},
+      {day:'Sun',type:'long',name:'Long Run',detail:'22km @ Z2 (4:35-4:50/km)',distance:'22km'}
+    ]},
+    { week:2, phase:'Build', volume:67, days:[
+      {day:'Mon',type:'rest',name:'Rest',detail:'Sauna + Cold Plunge'},
+      {day:'Tue',type:'tempo',name:'Progression Run',detail:'6km @ 5:00 → 5km @ 4:20 → 5km @ 3:55',distance:'16km'},
+      {day:'Wed',type:'cross',name:'Weights + Pilates',detail:'Heavy lower body + core. Reformer Pilates.'},
+      {day:'Thu',type:'easy',name:'Easy Run',detail:'12km @ 5:00-5:20/km',distance:'12km'},
+      {day:'Fri',type:'vo2',name:'VO2 Hills',detail:'2km WU → 6×800m hill repeats @ Z5 (jog back) → 2km CD',distance:'13km',track:true},
+      {day:'Sat',type:'cross',name:'Weights (heavy upper)',detail:'Heavy upper body'},
+      {day:'Sun',type:'long',name:'Long Run',detail:'26km @ Z2 (4:35-4:50/km)',distance:'26km'}
+    ]},
+    { week:3, phase:'Build', volume:74, days:[
+      {day:'Mon',type:'rest',name:'Rest',detail:'Sauna + Cold Plunge'},
+      {day:'Tue',type:'tempo',name:'Criss-Cross Tempo',detail:'3km WU → 6×2km alternating 3:55/3:45 (400m jog) → 2km CD',distance:'19km'},
+      {day:'Wed',type:'cross',name:'Weights + Pilates',detail:'Heavy lower body + core. Reformer Pilates.'},
+      {day:'Thu',type:'easy',name:'Easy Run',detail:'12km @ 5:00-5:20/km',distance:'12km'},
+      {day:'Fri',type:'vo2',name:'VO2 Intervals',detail:'3km WU → 5×1.2km @ 3:35/km (500m jog) → 2km CD',distance:'13.5km',track:true},
+      {day:'Sat',type:'cross',name:'Weights (heavy upper)',detail:'Heavy upper body'},
+      {day:'Sun',type:'long',name:'Long Run + MP Finish',detail:'30km — 24km @ Z2, last 6km @ 3:55/km',distance:'30km'}
+    ]},
+    { week:4, phase:'Build', volume:80, days:[
+      {day:'Mon',type:'rest',name:'Rest',detail:'Sauna + Cold Plunge'},
+      {day:'Tue',type:'tempo',name:'Threshold + MP',detail:'3km WU → 3×3km @ 3:42/km (600m jog) → 5km @ 3:55/km → 2km CD',distance:'20.8km'},
+      {day:'Wed',type:'cross',name:'Weights + Pilates',detail:'Heavy lower body + core. Reformer Pilates.'},
+      {day:'Thu',type:'easy',name:'Easy Run',detail:'12km @ 5:00-5:20/km',distance:'12km'},
+      {day:'Fri',type:'vo2',name:'VO2 Sharpener',detail:'3km WU → 8×600m @ 3:30/km (400m jog) → 2km CD',distance:'13km',track:true},
+      {day:'Sat',type:'cross',name:'Weights (heavy upper)',detail:'Heavy upper body'},
+      {day:'Sun',type:'long',name:'Long Run + MP Finish',detail:'34km — 26km @ Z2, last 8km @ 3:55/km',distance:'34km'}
+    ]},
+    { week:5, phase:'Deload', volume:55, days:[
+      {day:'Mon',type:'rest',name:'Rest',detail:'Sauna + Cold Plunge'},
+      {day:'Tue',type:'tempo',name:'Tempo (reduced)',detail:'3km WU → 2×4km @ 3:55/km (800m jog) → 2km CD',distance:'13.8km'},
+      {day:'Wed',type:'cross',name:'Weights + Pilates',detail:'Moderate. Reformer Pilates.'},
+      {day:'Thu',type:'easy',name:'Easy Run',detail:'10km @ 5:10-5:30/km',distance:'10km'},
+      {day:'Fri',type:'easy',name:'Strides + Easy',detail:'3km WU → 8×150m strides → 6km easy',distance:'10.2km'},
+      {day:'Sat',type:'cross',name:'Weights (heavy upper)',detail:'Heavy upper body'},
+      {day:'Sun',type:'long',name:'Long Run',detail:'21km @ Z2 (4:40-4:55/km)',distance:'21km'}
+    ]},
+    { week:6, phase:'Specific', volume:78, days:[
+      {day:'Mon',type:'rest',name:'Rest',detail:'Sauna + Cold Plunge'},
+      {day:'Tue',type:'tempo',name:'MP Long Tempo',detail:'3km WU → 16km @ 3:55/km → 2km CD',distance:'21km'},
+      {day:'Wed',type:'cross',name:'Weights + Pilates',detail:'Heavy lower body + core. Reformer Pilates.'},
+      {day:'Thu',type:'easy',name:'Easy Run',detail:'12km @ 5:00-5:20/km',distance:'12km'},
+      {day:'Fri',type:'tempo',name:'Threshold Intervals',detail:'3km WU → 4×2.5km @ 3:45/km (500m jog) → 2km CD',distance:'17km'},
+      {day:'Sat',type:'cross',name:'Weights (heavy upper)',detail:'Heavy upper body'},
+      {day:'Sun',type:'long',name:'Long Run + MP Finish',detail:'28km — 20km @ Z2, last 8km @ 3:55/km',distance:'28km'}
+    ]},
+    { week:7, phase:'Specific', volume:80, days:[
+      {day:'Mon',type:'rest',name:'Rest',detail:'Sauna + Cold Plunge'},
+      {day:'Tue',type:'tempo',name:'Criss-Cross Tempo',detail:'3km WU → 5×3km alternating 3:55/3:42 (600m jog) → 2km CD',distance:'22.4km'},
+      {day:'Wed',type:'cross',name:'Weights + Pilates',detail:'Heavy lower body + core. Reformer Pilates.'},
+      {day:'Thu',type:'easy',name:'Easy Run',detail:'12km @ 5:00-5:20/km',distance:'12km'},
+      {day:'Fri',type:'tempo',name:'MP Efforts + Floats',detail:'3km WU → 3×4km @ 3:55/km (1km float @ Z2) → 2km CD',distance:'19km'},
+      {day:'Sat',type:'cross',name:'Weights (heavy upper)',detail:'Heavy upper body'},
+      {day:'Sun',type:'long',name:'Long Run + MP Finish',detail:'27km — 17km @ Z2, last 10km @ 3:55/km',distance:'27km'}
+    ]},
+    { week:8, phase:'Peak', volume:73, days:[
+      {day:'Mon',type:'rest',name:'Rest',detail:'Sauna + Cold Plunge'},
+      {day:'Tue',type:'tempo',name:'Progression Run',detail:'7km @ 5:00 → 6km @ 4:20 → 6km @ 3:55',distance:'19km'},
+      {day:'Wed',type:'cross',name:'Weights + Pilates',detail:'Heavy lower body + core. Reformer Pilates.'},
+      {day:'Thu',type:'easy',name:'Easy Run',detail:'10km @ 5:00-5:20/km',distance:'10km'},
+      {day:'Fri',type:'tempo',name:'Threshold',detail:'3km WU → 3×3km @ 3:42/km (600m jog) → 2km CD',distance:'15.8km'},
+      {day:'Sat',type:'cross',name:'Weights (heavy upper)',detail:'Heavy upper body'},
+      {day:'Sun',type:'long',name:'Long Run + MP Finish',detail:'28km — 20km @ Z2, last 8km @ 3:55/km',distance:'28km'}
+    ]},
+    { week:9, phase:'Peak', volume:80, days:[
+      {day:'Mon',type:'rest',name:'Rest',detail:'Sauna + Cold Plunge'},
+      {day:'Tue',type:'tempo',name:'MP Long Tempo',detail:'3km WU → 18km @ 3:55/km → 2km CD',distance:'23km'},
+      {day:'Wed',type:'cross',name:'Weights + Pilates',detail:'Heavy lower body + core. Reformer Pilates.'},
+      {day:'Thu',type:'easy',name:'Easy Run',detail:'12km @ 5:00-5:20/km',distance:'12km'},
+      {day:'Fri',type:'easy',name:'Strides + Easy',detail:'3km WU → 6×150m strides → 6km easy',distance:'10km'},
+      {day:'Sat',type:'rest',name:'Rest',detail:'Full rest before key session'},
+      {day:'Sun',type:'long',name:'Runlimited-Style',detail:'33km — 7km steady Z2 → 3×7km @ 3:55/km (1km float @ Z2) → 2km @ 3:55. KEY CONFIDENCE SESSION.',distance:'33km'}
+    ]},
+    { week:10, phase:'Taper', volume:72, days:[
+      {day:'Mon',type:'rest',name:'Rest',detail:'Sauna + Cold Plunge'},
+      {day:'Tue',type:'tempo',name:'Progression Run',detail:'7km @ 5:00 → 6km @ 4:15 → 7km @ 3:55',distance:'20km'},
+      {day:'Wed',type:'cross',name:'Weights + Pilates',detail:'Moderate. Reformer Pilates.'},
+      {day:'Thu',type:'easy',name:'Easy Run',detail:'10km @ 5:00-5:20/km',distance:'10km'},
+      {day:'Fri',type:'tempo',name:'MP Efforts + Floats',detail:'3km WU → 3×3km @ 3:55/km (1km float @ Z2) → 2km CD',distance:'17km'},
+      {day:'Sat',type:'rest',name:'Rest',detail:'Full rest'},
+      {day:'Sun',type:'long',name:'Long Run + MP Finish',detail:'25km — 19km @ Z2, last 6km @ 3:55/km',distance:'25km'}
+    ]},
+    { week:11, phase:'Taper', volume:53, days:[
+      {day:'Mon',type:'rest',name:'Rest',detail:'Sauna + Cold Plunge'},
+      {day:'Tue',type:'tempo',name:'Tempo (short)',detail:'3km WU → 8km @ 3:55/km → 2km CD',distance:'13km'},
+      {day:'Wed',type:'cross',name:'Weights + Pilates',detail:'Moderate. Reformer Pilates.'},
+      {day:'Thu',type:'easy',name:'Easy Run',detail:'8km @ 5:00-5:20/km',distance:'8km'},
+      {day:'Fri',type:'vo2',name:'Track Sharpener',detail:'3km WU → 5×1km @ 3:33/km (400m jog) → 2km CD',distance:'12km',track:true},
+      {day:'Sat',type:'rest',name:'Rest + Sauna',detail:'Sauna + Cold Plunge'},
+      {day:'Sun',type:'long',name:'Long Run + MP Finish',detail:'20km — 14km @ Z2, last 6km @ 3:55/km',distance:'20km'}
+    ]},
+    { week:12, phase:'Race Week', volume:14, days:[
+      {day:'Mon',type:'rest',name:'Rest',detail:'Full rest'},
+      {day:'Tue',type:'easy',name:'Shakeout + Strides',detail:'6km easy Z1 + 6×150m strides',distance:'7km'},
+      {day:'Wed',type:'rest',name:'Rest',detail:'Carb loading'},
+      {day:'Thu',type:'easy',name:'Easy + Pickups',detail:'5km easy Z1 + 4×200m @ race pace feel',distance:'6km'},
+      {day:'Fri',type:'rest',name:'Rest',detail:'Full rest. Hydrate.'},
+      {day:'Sat',type:'easy',name:'Pre-Race Shakeout',detail:'3km very easy + 4×100m strides',distance:'3.5km'},
+      {day:'Sun',type:'race',name:'RACE DAY',detail:'Valencia Marathon — Sub 2:50. Race pace: 4:01/km.',distance:'42.2km'}
+    ]}
+  ]
+};
+
+function getState() {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const start = new Date(plan.startDate + 'T00:00:00');
+  const race = new Date(plan.raceDate + 'T00:00:00');
+  const diffToRace = Math.ceil((race - today) / 86400000);
+  const diffFromStart = Math.floor((today - start) / 86400000);
+  let currentWeek = -1;
+  let dayIndex = -1;
+  if (diffFromStart >= 0 && diffFromStart < 84) {
+    currentWeek = Math.floor(diffFromStart / 7) + 1;
+    dayIndex = diffFromStart % 7;
+  } else if (diffFromStart >= 84) {
+    currentWeek = 13; // past race
+  }
+  return { today, diffToRace, currentWeek, dayIndex };
+}
+
+let selectedWeek = null;
+let expandedCard = null;
+
+function isDone(week, dayIdx) {
+  return localStorage.getItem('valencia_done_' + week + '_' + dayIdx) === '1';
+}
+function toggleDone(week, dayIdx) {
+  const key = 'valencia_done_' + week + '_' + dayIdx;
+  if (localStorage.getItem(key) === '1') {
+    localStorage.removeItem(key);
+  } else {
+    localStorage.setItem(key, '1');
+  }
+  render();
+}
+
+function render() {
+  const state = getState();
+  if (selectedWeek === null) {
+    selectedWeek = state.currentWeek >= 1 && state.currentWeek <= 12 ? state.currentWeek : 1;
+  }
+  const weekData = plan.weeks[selectedWeek - 1];
+  const app = document.getElementById('app');
+
+  // Header
+  let countdownText = '';
+  if (state.diffToRace > 0) countdownText = state.diffToRace + ' days to go';
+  else if (state.diffToRace === 0) countdownText = 'Race day!';
+  else countdownText = 'Race complete';
+
+  let weekText = '';
+  if (state.currentWeek >= 1 && state.currentWeek <= 12) {
+    weekText = 'Week ' + state.currentWeek + ' \u2022 ' + plan.weeks[state.currentWeek - 1].phase;
+  } else if (state.currentWeek === 13) {
+    weekText = 'Training complete';
+  } else {
+    weekText = 'Starts Sep 14';
+  }
+
+  // Hero
+  let heroHTML = '';
+  if (state.currentWeek >= 1 && state.currentWeek <= 12) {
+    const todaySession = plan.weeks[state.currentWeek - 1].days[state.dayIndex];
+    const dateStr = state.today.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    heroHTML = '<div class="hero-card ' + todaySession.type + '">' +
+      '<div class="hero-date">' + dateStr + '</div>' +
+      '<div class="hero-name">' + todaySession.name + '</div>' +
+      '<div class="hero-detail">' + todaySession.detail + '</div>' +
+      '<div class="hero-badges">' +
+      (todaySession.distance ? '<span class="badge badge-distance">' + todaySession.distance + '</span>' : '') +
+      (todaySession.track ? '<span class="badge badge-track">Track</span>' : '') +
+      '</div></div>';
+  } else if (state.currentWeek === 13) {
+    heroHTML = '<div class="hero-prestart">Race complete. Well done! 🏅</div>';
+  } else {
+    heroHTML = '<div class="hero-prestart">Training starts Sep 14, 2026</div>';
+  }
+
+  // Week tabs
+  let tabsHTML = '';
+  for (let i = 1; i <= 12; i++) {
+    const active = i === selectedWeek ? ' active' : '';
+    tabsHTML += '<div class="week-tab' + active + '" data-week="' + i + '">W' + i + '</div>';
+  }
+
+  // Sessions
+  let sessionsHTML = '';
+  weekData.days.forEach(function(session, idx) {
+    const done = isDone(selectedWeek, idx);
+    const expanded = expandedCard === selectedWeek + '_' + idx;
+    const isToday = (selectedWeek === state.currentWeek && idx === state.dayIndex);
+    let cls = 'session-card ' + session.type;
+    if (done) cls += ' done';
+    if (expanded) cls += ' expanded';
+    if (isToday) cls += ' today';
+    sessionsHTML += '<div class="' + cls + '" data-week="' + selectedWeek + '" data-idx="' + idx + '">' +
+      '<div class="session-header">' +
+      '<span class="session-day">' + session.day + '</span>' +
+      '<span class="session-name">' + session.name + '</span>' +
+      (session.distance ? '<span class="session-dist">' + session.distance + '</span>' : '') +
+      '</div>' +
+      '<div class="session-expand"><div class="session-detail">' +
+      session.detail +
+      '<br><span class="done-btn" data-week="' + selectedWeek + '" data-idx="' + idx + '">' +
+      (done ? 'Undo' : '✓ Done') + '</span>' +
+      '</div></div></div>';
+  });
+
+  // Volume chart
+  const volumes = plan.weeks.map(function(w) { return w.volume; });
+  const maxVol = Math.max.apply(null, volumes);
+  let chartHTML = '';
+  volumes.forEach(function(v, i) {
+    const pct = (v / maxVol * 100).toFixed(1);
+    const active = (i + 1) === selectedWeek ? ' active' : '';
+    chartHTML += '<div class="volume-bar-row">' +
+      '<span class="volume-label">W' + (i + 1) + '</span>' +
+      '<div class="volume-bar-bg"><div class="volume-bar' + active + '" style="width:' + pct + '%"></div></div>' +
+      '<span class="volume-val">' + v + '</span></div>';
+  });
+
+  app.innerHTML =
+    '<header><h1>Valencia 2026</h1><div class="meta"><span>' + countdownText + '</span><span>' + weekText + '</span></div></header>' +
+    '<section class="hero">' + heroHTML + '</section>' +
+    '<nav class="week-tabs"><div class="week-tabs-inner">' + tabsHTML + '</div></nav>' +
+    '<section class="week-sessions">' + sessionsHTML + '</section>' +
+    '<section class="volume-chart"><div class="volume-title">Volume Progression</div>' + chartHTML + '</section>';
+
+  // Event listeners
+  document.querySelectorAll('.week-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      selectedWeek = parseInt(this.dataset.week);
+      expandedCard = null;
+      render();
+    });
+  });
+  document.querySelectorAll('.session-header').forEach(function(hdr) {
+    hdr.addEventListener('click', function() {
+      const card = this.parentElement;
+      const key = card.dataset.week + '_' + card.dataset.idx;
+      expandedCard = expandedCard === key ? null : key;
+      render();
+    });
+  });
+  document.querySelectorAll('.done-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleDone(parseInt(this.dataset.week), parseInt(this.dataset.idx));
+    });
+  });
+
+  // Scroll active tab into view
+  const activeTab = document.querySelector('.week-tab.active');
+  if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+}
+
+render();
+</script>
+</body>
+</html>
